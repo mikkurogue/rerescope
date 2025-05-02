@@ -1,4 +1,5 @@
 pub mod app;
+pub mod ui;
 
 use app::App;
 use crossterm::{
@@ -11,11 +12,9 @@ use ratatui::{
     Terminal,
     backend::CrosstermBackend,
     layout::{Constraint, Layout},
-    style::{Modifier, Style},
-    text::{Span, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
 };
 use std::{error::Error, io};
+use ui::{file_list::FileList, input::Input};
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
@@ -60,24 +59,8 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, app: &mut App)
 
             // Input box
 
-            let input = Paragraph::new(Text::from(app.query.as_str()))
-                .block(Block::default().borders(Borders::ALL).title("Search"));
-            f.render_widget(input, chunks[0]);
-
-            // File list
-            let items: Vec<ListItem> = app
-                .filtered_files
-                .iter()
-                .map(|f| ListItem::new(Span::from(f.clone())))
-                .collect();
-
-            let list = List::new(items)
-                .block(Block::default().borders(Borders::ALL).title("Files"))
-                .highlight_style(Style::default().add_modifier(Modifier::BOLD))
-                .highlight_symbol(">> ");
-
-            app.list_state.select(Some(app.selected));
-            f.render_stateful_widget(list, chunks[1], &mut app.list_state);
+            Input::render(app, &chunks, f);
+            FileList::render(app, &chunks, f);
         })?;
 
         if event::poll(std::time::Duration::from_millis(100))? {
