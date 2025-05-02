@@ -1,10 +1,11 @@
+pub mod app;
+
+use app::App;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use fuzzy_matcher::FuzzyMatcher;
-use fuzzy_matcher::skim::SkimMatcherV2;
 use ignore::Walk;
 use ratatui::{
     Terminal,
@@ -12,55 +13,9 @@ use ratatui::{
     layout::{Constraint, Layout},
     style::{Modifier, Style},
     text::{Span, Text},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
 };
 use std::{error::Error, io};
-
-struct App {
-    files: Vec<String>,
-    filtered_files: Vec<String>,
-    query: String,
-    selected: usize,
-    list_state: ListState,
-}
-
-impl App {
-    fn new(files: Vec<String>) -> Self {
-        let filtered_files = files.clone();
-
-        Self {
-            files,
-            filtered_files,
-            query: String::new(),
-            selected: 0,
-            list_state: ListState::default(),
-        }
-    }
-
-    fn update_filtered_files(&mut self) {
-        if self.query.is_empty() {
-            self.filtered_files = self.files.clone();
-        } else {
-            let matcher = SkimMatcherV2::default();
-            let mut scored_files: Vec<(String, i64)> = self
-                .files
-                .iter()
-                .filter_map(|file| {
-                    matcher
-                        .fuzzy_match(file, &self.query)
-                        .map(|score| (file.clone(), score))
-                })
-                .collect();
-
-            // Sort by match score descending
-            scored_files.sort_by(|a, b| b.1.cmp(&a.1));
-
-            // Now set filtered_files just to the filenames
-            self.filtered_files = scored_files.into_iter().map(|(file, _)| file).collect();
-        }
-        self.selected = 0;
-    }
-}
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
