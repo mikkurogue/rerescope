@@ -22,7 +22,7 @@ end
 
 -- Run the binary in a floating window to display the TUI and capture the selected file
 local function run_rerescope()
-    local buf = vim.api.nvim_create_buf(false, true)
+    local buf = vim.api.nvim_create_buf(false, true) -- Create a scratch buffer
     local width = math.floor(vim.o.columns * 0.8)
     local height = math.floor(vim.o.lines * 0.8)
     local opts = {
@@ -35,25 +35,28 @@ local function run_rerescope()
         border = "rounded",
     }
 
-    local win = vim.api.nvim_open_win(buf, true, opts)
+    local win = vim.api.nvim_open_win(buf, true, opts) -- Open a floating window
 
     vim.fn.termopen("rerescope", {
         on_exit = function(_, exit_code)
-            vim.api.nvim_win_close(win, true)
+            vim.api.nvim_win_close(win, true) -- Close the floating window
             if exit_code == 0 then
                 local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
                 for _, line in ipairs(lines) do
                     if line and line ~= "" then
                         local absolute_path = vim.fn.fnamemodify(line, ":p") -- Convert to absolute path
-                        vim.cmd("edit " .. absolute_path)
+                        if vim.fn.filereadable(absolute_path) == 1 then
+                            vim.cmd("edit " .. absolute_path) -- Open the file in a new buffer
+                        end
                         break
                     end
                 end
             end
+            vim.api.nvim_buf_delete(buf, { force = true }) -- Clean up the buffer
         end,
     })
 
-    vim.cmd("startinsert")
+    vim.cmd("startinsert") -- Start in insert mode for the terminal
 end
 
 -- Main function to integrate with Neovim
