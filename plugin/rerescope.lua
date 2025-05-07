@@ -20,55 +20,15 @@ local function ensure_binary_installed()
     end
 end
 
--- Run the binary and get file suggestions
+-- Run the binary in a terminal to display the TUI
 local function run_rerescope()
-    local cmd = "rerescope " 
-    local handle = io.popen(cmd)
-    if not handle then
-        print("Failed to execute rerescope binary.")
-        return {}
-    end
-
-    local result = handle:read("*a")
-    handle:close()
-
-    if result == "" then
-        print("No output from rerescope.")
-        return {}
-    end
-
-    return vim.split(result, "\n", { trimempty = true })
-end
-
--- Open a selected file in Neovim
-local function open_file(file_path)
-    vim.cmd("edit " .. file_path)
+    vim.cmd("split | terminal rerescope")
 end
 
 -- Main function to integrate with Neovim
 local function rerescope_find_files()
     ensure_binary_installed()
-
-    local args = {"--find"} -- Example argument, adjust as needed
-    local files = run_rerescope()
-
-    if #files == 0 then
-        print("No files found.")
-        return
-    end
-
-    -- Display files and let the user pick one
-    print("Select a file to open:")
-    for i, file in ipairs(files) do
-        print(i .. ": " .. file)
-    end
-
-    local choice = tonumber(vim.fn.input("Enter the number of the file to open: "))
-    if choice and choice > 0 and choice <= #files then
-        open_file(files[choice])
-    else
-        print("Invalid choice.")
-    end
+    run_rerescope()
 end
 
 -- Expose the command to Neovim
