@@ -42,10 +42,12 @@ local function run_rerescope()
             vim.api.nvim_win_close(win, true)
             if exit_code == 0 then
                 local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-                local selected_file = lines[#lines] -- Capture the last line as the selected file
-                if selected_file and selected_file ~= "" then
-                    local absolute_path = vim.fn.fnamemodify(selected_file, ":p") -- Convert to absolute path
-                    vim.cmd("edit " .. absolute_path)
+                for _, line in ipairs(lines) do
+                    if line and line ~= "" then
+                        local absolute_path = vim.fn.fnamemodify(line, ":p") -- Convert to absolute path
+                        vim.cmd("edit " .. absolute_path)
+                        break
+                    end
                 end
             end
         end,
