@@ -20,9 +20,30 @@ local function ensure_binary_installed()
     end
 end
 
--- Run the binary in a terminal to display the TUI
+-- Run the binary in a floating window to display the TUI
 local function run_rerescope()
-    vim.cmd("split | terminal rerescope")
+    local buf = vim.api.nvim_create_buf(false, true)
+    local width = math.floor(vim.o.columns * 0.8)
+    local height = math.floor(vim.o.lines * 0.8)
+    local opts = {
+        relative = "editor",
+        width = width,
+        height = height,
+        col = math.floor((vim.o.columns - width) / 2),
+        row = math.floor((vim.o.lines - height) / 2),
+        style = "minimal",
+        border = "rounded",
+    }
+
+    local win = vim.api.nvim_open_win(buf, true, opts)
+
+    vim.fn.termopen("rerescope", {
+        on_exit = function()
+            vim.api.nvim_win_close(win, true)
+        end,
+    })
+
+    vim.cmd("startinsert")
 end
 
 -- Main function to integrate with Neovim
