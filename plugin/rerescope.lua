@@ -44,7 +44,8 @@ local function run_rerescope()
                 local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
                 local selected_file = lines[#lines] -- Capture the last line as the selected file
                 if selected_file and selected_file ~= "" then
-                    vim.cmd("edit " .. selected_file)
+                    local absolute_path = vim.fn.fnamemodify(selected_file, ":p") -- Convert to absolute path
+                    vim.cmd("edit " .. absolute_path)
                 end
             end
         end,
