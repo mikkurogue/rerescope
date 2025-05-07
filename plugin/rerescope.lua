@@ -20,7 +20,7 @@ local function ensure_binary_installed()
     end
 end
 
--- Run the binary in a floating window to display the TUI
+-- Run the binary in a floating window to display the TUI and capture the selected file
 local function run_rerescope()
     local buf = vim.api.nvim_create_buf(false, true)
     local width = math.floor(vim.o.columns * 0.8)
@@ -38,8 +38,15 @@ local function run_rerescope()
     local win = vim.api.nvim_open_win(buf, true, opts)
 
     vim.fn.termopen("rerescope", {
-        on_exit = function()
+        on_exit = function(_, exit_code)
             vim.api.nvim_win_close(win, true)
+            if exit_code == 0 then
+                local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+                local selected_file = lines[#lines] -- Capture the last line as the selected file
+                if selected_file and selected_file ~= "" then
+                    vim.cmd("edit " .. selected_file)
+                end
+            end
         end,
     })
 
